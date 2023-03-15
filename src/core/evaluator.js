@@ -3641,9 +3641,19 @@ class PartialEvaluator {
         // obtained in step (d), producing a Unicode value.
         const ucs2 = ucs2CMap.lookup(cid);
         if (ucs2) {
-          toUnicode[charcode] = String.fromCharCode(
-            (ucs2.charCodeAt(0) << 8) + ucs2.charCodeAt(1)
-          );
+          const ucs2length = ucs2.length;
+          if (ucs2length % 2 !== 0) {
+            warn(
+              `ucs2 length is odd. [charCode:${charcode} cid:${cid} ucs2:${[
+                ...ucs2,
+              ].map(c => c.charCodeAt(0))}`
+            );
+          }
+          const code = [];
+          for (let i = 0; i < ucs2length; i += 2) {
+            code.push((ucs2.charCodeAt(i) << 8) + ucs2.charCodeAt(i + 1));
+          }
+          toUnicode[charcode] = String.fromCharCode(...code);
         }
       });
       return new ToUnicodeMap(toUnicode);
